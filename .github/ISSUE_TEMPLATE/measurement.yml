@@ -1,0 +1,29 @@
+name: Measurement report
+description: Share a `will-it-load verify --json` result (takes 2 minutes, helps a lot)
+title: "[measurement] <OS> / <RAM> / LM Studio <version>"
+labels: [measurement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks! Run `will-it-load verify --json` (it never loads a model, it only asks LM Studio for its estimate) and paste the output below.
+        **Black-box only:** please don't include anything obtained by decompiling LM Studio. See CONTRIBUTING.md.
+  - type: input
+    id: version
+    attributes:
+      label: LM Studio version
+      placeholder: "0.4.25"
+    validations:
+      required: true
+  - type: textarea
+    id: report
+    attributes:
+      label: verify --json output
+      render: json
+    validations:
+      required: true
+  - type: textarea
+    id: scenario
+    attributes:
+      label: Anything special?
+      description: Models loaded at the time, GPU model, guardrail mode changes, a real load that behaved differently from the estimate...

@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Will It Load?</title>
+<meta name="description" content="Predict whether LM Studio's model-loading guardrail will let your model load — and why it got blocked. Unofficial, open source, runs in your browser.">
+<meta property="og:title" content="Will It Load? — LM Studio guardrail calculator">
+<meta property="og:description" content="Why LM Studio says 'insufficient system resources', and how much room you really have. Verified against LM Studio's own dry run.">
+<meta property="og:image" content="https://nikpottbecker.github.io/will-it-load/assets/social-preview.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧮</text></svg>">
+<style>
+  :root {
+    --bg: #f6f7f9; --panel: #ffffff; --text: #16181d; --muted: #5d6573; --line: #dfe3ea;
+    --accent: #4b5bdc; --ok: #13834f; --ok-bg: #e5f5ec; --bad: #c0392b; --bad-bg: #fbe9e7;
+    --unk: #7a6a12; --unk-bg: #fbf5d9; --bar-model: #4b5bdc; --bar-used: #9aa3b5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1115; --panel: #171a21; --text: #e8eaef; --muted: #9aa2b1; --line: #2a2f3a;
+      --accent: #8b97ff; --ok: #4cd18c; --ok-bg: #12301f; --bad: #ff7a6b; --bad-bg: #3a1714;
+      --unk: #e6cf62; --unk-bg: #332c0c; --bar-model: #8b97ff; --bar-used: #545c6c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1115; --panel: #171a21; --text: #e8eaef; --muted: #9aa2b1; --line: #2a2f3a;
+    --accent: #8b97ff; --ok: #4cd18c; --ok-bg: #12301f; --bad: #ff7a6b; --bad-bg: #3a1714;
+    --unk: #e6cf62; --unk-bg: #332c0c; --bar-model: #8b97ff; --bar-used: #545c6c;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 2.1rem; margin: 0 0 4px; letter-spacing: -0.02em; }
+  .lead { color: var(--muted); margin: 0 0 24px; max-width: 62ch; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  label { display: flex; flex-direction: column; gap: 4px; font-size: .85rem; color: var(--muted); }
+  input, select { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line);
+    border-radius: 8px; padding: 8px 10px; min-width: 0; width: 100%; }
+  .model > * { min-width: 0; }
+  input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  h2 { font-size: 1.05rem; margin: 0 0 12px; }
+  .budget { font-size: 1.1rem; margin-top: 14px; }
+  .budget b { font-variant-numeric: tabular-nums; }
+  .model { display: grid; grid-template-columns: 1.6fr 1fr 1fr auto; gap: 8px; align-items: end; margin-bottom: 8px; }
+  .model button, .add { font: inherit; border: 1px solid var(--line); background: transparent; color: var(--muted);
+    border-radius: 8px; padding: 8px 12px; cursor: pointer; }
+  .add { color: var(--accent); }
+  .result { border-radius: 10px; padding: 14px 16px; margin-top: 10px; }
+  .result.ok { background: var(--ok-bg); color: var(--ok); }
+  .result.bad { background: var(--bad-bg); color: var(--bad); }
+  .result.unk { background: var(--unk-bg); color: var(--unk); }
+  .result strong { font-size: 1.15rem; }
+  .bar { position: relative; height: 22px; border-radius: 6px; background: var(--bg); border: 1px solid var(--line);
+    overflow: hidden; margin-top: 10px; }
+  .bar span { position: absolute; top: 0; bottom: 0; }
+  .bar .used { background: var(--bar-used); left: 0; }
+  .bar .new { background: var(--bar-model); opacity: .85; }
+  .bar .limit { width: 2px; background: var(--text); }
+  .legend { font-size: .8rem; color: var(--muted); margin-top: 6px; }
+  details { margin-top: 8px; }
+  summary { cursor: pointer; color: var(--accent); }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .9em; background: var(--bg);
+    padding: 1px 5px; border-radius: 4px; border: 1px solid var(--line); }
+  pre { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px; overflow-x: auto; }
+  footer { color: var(--muted); font-size: .85rem; margin-top: 32px; }
+  a { color: var(--accent); }
+  @media (max-width: 560px) { .model { grid-template-columns: 1fr 1fr; } h1 { font-size: 1.7rem; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Will it load? 🧮</h1>
+  <p class="lead">LM Studio refuses to load a model with <em>“insufficient system resources”</em>, but there seems to be enough RAM?
+    This calculator reproduces LM Studio's model-loading guardrail so you can see the budget, the estimate and the reason.
+    It's <strong>unofficial</strong>, open source, and runs entirely in your browser.</p>
+
+  <section class="panel" aria-labelledby="machine">
+    <h2 id="machine">1 · Your machine</h2>
+    <div class="grid">
+      <label>Platform
+        <select id="platform">
+          <option value="darwin">macOS (Apple Silicon)</option>
+          <option value="win32">Windows</option>
+          <option value="linux">Linux</option>
+        </select></label>
+      <label>RAM (GB)<input id="ram" type="number" min="1" step="1" value="32"></label>
+      <label id="vramLabel">Dedicated VRAM (GB)<input id="vram" type="number" min="0" step="1" value="0"></label>
+      <label>Guardrail mode
+        <select id="mode">
+          <option value="strict">Strict</option>
+          <option value="balanced" selected>Balanced (default)</option>
+          <option value="relaxed">Relaxed</option>
+          <option value="custom">Custom</option>
+          <option value="off">Off</option>
+        </select></label>
+      <label id="customLabel" hidden>Custom limit (GB)<input id="custom" type="number" min="0" step="0.5" value="20"></label>
+    </div>
+    <p class="budget">Guardrail budget: <b id="limit">–</b> <span id="limitHow" class="legend"></span></p>
+  </section>
+
+  <section class="panel" aria-labelledby="loaded">
+    <h2 id="loaded">2 · Already loaded in LM Studio</h2>
+    <div class="grid">
+      <label>Total size of models that stay loaded (GB, as in <code>lms ps</code>)<input id="inuse" type="number" min="0" step="0.1" value="0"></label>
+      <label>How many models<input id="inuseCount" type="number" min="1" step="1" value="1"></label>
+    </div>
+    <p class="legend">Models you loaded via <code>lms load</code> or the GUI stay loaded. Just-in-time (API) loads only evict other
+      just-in-time models. Other apps are <em>not</em> counted by the guardrail.</p>
+  </section>
+
+  <section class="panel" aria-labelledby="models">
+    <h2 id="models">3 · Model to load</h2>
+    <div id="modelList"></div>
+    <button class="add" id="addModel" type="button">+ compare another model</button>
+  </section>
+
+  <section class="panel" aria-labelledby="how">
+    <h2 id="how">How the guardrail decides</h2>
+    <ol>
+      <li><b>Budget</b>: Strict 65 %, Balanced 75 %, Relaxed 85 % of the first 16 GiB of memory, plus 85 / 85 / 90 % of everything above.
+        macOS counts RAM only; Windows/Linux add dedicated VRAM. Custom uses your fixed number.</li>
+      <li><b>Estimate</b>: MLX (safetensors) and embedding models are estimated as <b>file size × 1.4</b>, independent of the context length you pick.
+        GGUF LLMs get a detailed estimate from context length, layers and KV cache — check those with <code>lms load &lt;model&gt; --estimate-only</code>.</li>
+      <li><b>Decision</b>: it loads if <i>memory used by LM Studio's loaded models + estimate ≤ budget</i>. A loaded model counts as its file size plus about 0.6 GiB; with nothing loaded, nothing counts.</li>
+    </ol>
+    <details><summary>Check your own machine from the terminal</summary>
+<pre>uvx --from git+https://github.com/nikpottbecker/will-it-load will-it-load
+uvx --from git+https://github.com/nikpottbecker/will-it-load will-it-load verify</pre>
+      <p class="legend"><code>verify</code> compares every prediction with LM Studio's own dry run (<code>lms load --estimate-only</code>) — no model gets loaded.</p>
+    </details>
+  </section>
+
+  <footer>
+    Made by the community, <strong>not affiliated with or endorsed by LM Studio / Element Labs</strong>. “LM Studio” is a trademark of its owner, used here only to say what this tool works with.
+    Behaviour verified on LM Studio 0.4.25; future versions may differ.
+    <a href="https://github.com/nikpottbecker/will-it-load">Source, findings &amp; measurements on GitHub</a> · MIT license.
+  </footer>
+</main>
+
+<template id="modelTpl">
+  <div class="modelItem">
+    <div class="model">
+      <label>Name (optional)<input class="name" type="text" placeholder="e.g. gpt-oss-20b"></label>
+      <label>Size (GB, as LM Studio shows it)<input class="size" type="number" min="0" step="0.01" value="12.1"></label>
+      <label>Format
+        <select class="format">
+          <option value="safetensors">MLX / safetensors</option>
+          <option value="gguf">GGUF LLM</option>
+          <option value="embedding">Embedding model</option>
+        </select></label>
+      <button type="button" class="remove" aria-label="Remove model">✕</button>
+    </div>
+    <div class="result" role="status"></div>
+  </div>
+</template>
+
+<script type="module">
+  import { GiB, countedMemory, limitBytes, estimateBytes, inUseBytes, willLoad, fmt } from "./calculator.mjs";
+  const $ = (id) => document.getElementById(id);
+  const list = $("modelList");
+
+  function addModel(size = 12.1, name = "") {
+    const node = $("modelTpl").content.firstElementChild.cloneNode(true);
+    node.querySelector(".size").value = size;
+    node.querySelector(".name").value = name;
+    node.querySelector(".remove").addEventListener("click", () => { node.remove(); update(); });
+    node.addEventListener("input", update);
+    list.appendChild(node);
+    update();
+  }
+
+  function update() {
+    const platform = $("platform").value;
+    const mode = $("mode").value;
+    $("vramLabel").hidden = platform === "darwin";
+    $("customLabel").hidden = mode !== "custom";
+    const ram = Number($("ram").value) * GiB;
+    const vram = Number($("vram").value) * GiB;
+    const total = countedMemory(ram, vram, platform);
+    const limit = limitBytes(mode, total, Number($("custom").value) * GiB);
+    $("limit").textContent = fmt(limit);
+    $("limitHow").textContent = mode === "off" ? "(guardrail disabled)" : mode === "custom" ? "(your fixed value)"
+      : `(${platform === "darwin" ? "RAM only" : "RAM + VRAM"} = ${fmt(total)})`;
+    const loadedGB = Number($("inuse").value);
+    const count = Math.max(1, Math.round(Number($("inuseCount").value) || 1));
+    const inUse = loadedGB > 0 ? inUseBytes(Array(count).fill((loadedGB * 1e9) / count)) : 0;
+
+    for (const item of list.children) {
+      const size = Number(item.querySelector(".size").value) * 1e9;
+      const f = item.querySelector(".format").value;
+      const est = estimateBytes(size, f === "gguf" ? "gguf" : "safetensors", f === "embedding" ? "embedding" : "llm");
+      const ok = willLoad(est, inUse, limit);
+      const box = item.querySelector(".result");
+      const name = item.querySelector(".name").value || "This model";
+      box.className = "result " + (ok === null ? "unk" : ok ? "ok" : "bad");
+      if (ok === null) {
+        box.innerHTML = `<strong>Depends on settings.</strong> GGUF LLM estimates depend on context length, KV cache and GPU offload. Run <code>lms load &lt;model&gt; --estimate-only</code>.`;
+        continue;
+      }
+      const head = limit - inUse - est;
+      const scale = Math.max(limit === Infinity ? 0 : limit, inUse + est) * 1.05 || 1;
+      const pct = (x) => `${Math.min(100, (x / scale) * 100)}%`;
+      box.innerHTML = `<strong>${ok ? "✅ Loads" : "⛔ Blocked"}</strong> — ${escapeHtml(name)} is estimated at <b>${fmt(est)}</b>
+        (${fmt(size)} × 1.4). ${limit === Infinity ? "Guardrail is off." : ok ? `Headroom left: ${fmt(head)}.` : `Short by ${fmt(-head)}. Unload other models, pick a smaller quant, or use a looser mode.`}
+        <div class="bar" aria-hidden="true"><span class="used" style="width:${pct(inUse)}"></span>
+        <span class="new" style="left:${pct(inUse)};width:${pct(est)}"></span>
+        ${limit === Infinity ? "" : `<span class="limit" style="left:${pct(limit)}"></span>`}</div>
+        <div class="legend">grey = already used · colour = this model's estimate · line = budget</div>`;
+    }
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+  }
+
+  for (const id of ["platform", "ram", "vram", "mode", "custom", "inuse", "inuseCount"]) $(id).addEventListener("input", update);
+  $("addModel").addEventListener("click", () => addModel(15.14));
+  addModel(12.1, "gpt-oss-20b (MLX)");
+</script>
+</body>
+</html>

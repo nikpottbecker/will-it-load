@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: LM Studio support (official)
+    url: https://lmstudio.ai/docs
+    about: Problems with LM Studio itself belong there. This project is unofficial.

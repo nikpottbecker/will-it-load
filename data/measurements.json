@@ -1,0 +1,193 @@
+{
+  "description": "Black-box measurements: will-it-load predictions vs. `lms load --estimate-only` (LM Studio's own dry run). Add yours via a 'Measurement report' issue. 'probes' are boundary bisections with a placeholder model (`will-it-load probe`).",
+  "lm_studio_version": "0.4.25+1",
+  "measured_on": "2026-11-07",
+  "reports": [
+    {
+      "tool": "will-it-load 0.1.0",
+      "machine": {
+        "platform": "darwin",
+        "cpu": "Apple M1 Max",
+        "ram_bytes": 34359738368,
+        "vram_bytes": 0,
+        "os": "macOS-26.0.1"
+      },
+      "guardrail_mode": "balanced",
+      "predicted_limit_bytes": 27487790694.4,
+      "loaded_models": [],
+      "rows": [
+        {
+          "model": "devstral-small-2-24b-instruct-2512",
+          "format": "safetensors",
+          "type": "llm",
+          "size_bytes": 15136819784,
+          "predicted_estimate_bytes": 21191547697.6,
+          "lms_estimate_bytes": 21195663605.76,
+          "lms_confidence": "LOW",
+          "predicted_will_load": true,
+          "lms_will_load": true,
+          "estimate_match": true,
+          "verdict_match": true
+        },
+        {
+          "model": "gemma-4-26b-a4b-it-qat-mlx",
+          "format": "safetensors",
+          "type": "llm",
+          "size_bytes": 15641263625,
+          "predicted_estimate_bytes": 21897769075.0,
+          "lms_estimate_bytes": 21893595791.36,
+          "lms_confidence": "LOW",
+          "predicted_will_load": true,
+          "lms_will_load": true,
+          "estimate_match": true,
+          "verdict_match": true
+        },
+        {
+          "model": "gpt-oss-20b",
+          "format": "safetensors",
+          "type": "llm",
+          "size_bytes": 12104218243,
+          "predicted_estimate_bytes": 16945905540.199999,
+          "lms_estimate_bytes": 16943645982.72,
+          "lms_confidence": "LOW",
+          "predicted_will_load": true,
+          "lms_will_load": true,
+          "estimate_match": true,
+          "verdict_match": true
+        },
+        {
+          "model": "text-embedding-nomic-embed-text-v1.5",
+          "format": "gguf",
+          "type": "embedding",
+          "size_bytes": 84106624,
+          "predicted_estimate_bytes": 117749273.6,
+          "lms_estimate_bytes": 117744599.04,
+          "lms_confidence": "LOW",
+          "predicted_will_load": true,
+          "lms_will_load": true,
+          "estimate_match": true,
+          "verdict_match": true
+        }
+      ],
+      "scenario": "nothing loaded"
+    },
+    {
+      "tool": "will-it-load 0.1.0",
+      "machine": {
+        "platform": "darwin",
+        "cpu": "Apple M1 Max",
+        "ram_bytes": 34359738368,
+        "vram_bytes": 0,
+        "os": "macOS-26.0.1"
+      },
+      "guardrail_mode": "balanced",
+      "predicted_limit_bytes": 27487790694.4,
+      "loaded_models": [
+        "gpt-oss-20b"
+      ],
+      "rows": [
+        {
+          "model": "devstral-small-2-24b-instruct-2512",
+          "format": "safetensors",
+          "type": "llm",
+          "size_bytes": 15136819784,
+          "predicted_estimate_bytes": 21191547697.6,
+          "lms_estimate_bytes": 21195663605.76,
+          "lms_confidence": "LOW",
+          "predicted_will_load": false,
+          "lms_will_load": false,
+          "estimate_match": true,
+          "verdict_match": true
+        },
+        {
+          "model": "gemma-4-26b-a4b-it-qat-mlx",
+          "format": "safetensors",
+          "type": "llm",
+          "size_bytes": 15641263625,
+          "predicted_estimate_bytes": 21897769075.0,
+          "lms_estimate_bytes": 21893595791.36,
+          "lms_confidence": "LOW",
+          "predicted_will_load": false,
+          "lms_will_load": false,
+          "estimate_match": true,
+          "verdict_match": true
+        },
+        {
+          "model": "gpt-oss-20b",
+          "format": "safetensors",
+          "type": "llm",
+          "size_bytes": 12104218243,
+          "predicted_estimate_bytes": 16945905540.199999,
+          "lms_estimate_bytes": 16943645982.72,
+          "lms_confidence": "LOW",
+          "predicted_will_load": false,
+          "lms_will_load": false,
+          "estimate_match": true,
+          "verdict_match": true
+        },
+        {
+          "model": "text-embedding-nomic-embed-text-v1.5",
+          "format": "gguf",
+          "type": "embedding",
+          "size_bytes": 84106624,
+          "predicted_estimate_bytes": 117749273.6,
+          "lms_estimate_bytes": 117744599.04,
+          "lms_confidence": "LOW",
+          "predicted_will_load": true,
+          "lms_will_load": true,
+          "estimate_match": true,
+          "verdict_match": true
+        }
+      ],
+      "scenario": "gpt-oss-20b loaded manually (lms load)"
+    }
+  ],
+  "probes": [
+    {
+      "tool": "will-it-load 0.1.0",
+      "experiment": "E1 probe",
+      "machine": {
+        "platform": "darwin",
+        "cpu": "Apple M1 Max",
+        "ram_bytes": 34359738368,
+        "vram_bytes": 0,
+        "os": "macOS-26.0.1"
+      },
+      "guardrail_mode": "balanced",
+      "loaded_models": [],
+      "predicted_limit_bytes": 27487790694.4,
+      "predicted_in_use_bytes": 0.0,
+      "predicted_max_estimate_bytes": 27487790694.4,
+      "found": true,
+      "max_accepted_estimate_bytes": 27487790694.4,
+      "min_rejected_estimate_bytes": 27488294010.88,
+      "scenario": "nothing loaded",
+      "loaded_model_sizes": {}
+    },
+    {
+      "tool": "will-it-load 0.1.0",
+      "experiment": "E1 probe",
+      "machine": {
+        "platform": "darwin",
+        "cpu": "Apple M1 Max",
+        "ram_bytes": 34359738368,
+        "vram_bytes": 0,
+        "os": "macOS-26.0.1"
+      },
+      "guardrail_mode": "balanced",
+      "loaded_models": [
+        "gpt-oss-20b"
+      ],
+      "predicted_limit_bytes": 27487790694.4,
+      "predicted_in_use_bytes": 12726988500.92,
+      "predicted_max_estimate_bytes": 14760802193.480001,
+      "found": true,
+      "max_accepted_estimate_bytes": 14781613627.236675,
+      "min_rejected_estimate_bytes": 14781883905.59715,
+      "scenario": "gpt-oss-20b loaded manually (12104218243 bytes, 32k context, idle)",
+      "loaded_model_sizes": {
+        "gpt-oss-20b": 12104218243
+      }
+    }
+  ]
+}

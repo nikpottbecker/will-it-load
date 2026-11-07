@@ -1,0 +1,36 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "will-it-load"
+version = "0.1.0"
+description = "Predict whether LM Studio's model-loading guardrail will let a model load - and why it didn't. Unofficial, community-made."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.9"
+authors = [{ name = "Nik Pottbecker" }]
+keywords = ["lm-studio", "llm", "local-llm", "mlx", "gguf", "memory", "guardrails", "apple-silicon"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent",
+  "Environment :: Console",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/nikpottbecker/will-it-load"
+Calculator = "https://nikpottbecker.github.io/will-it-load/"
+Issues = "https://github.com/nikpottbecker/will-it-load/issues"
+
+[project.scripts]
+will-it-load = "will_it_load.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/will_it_load"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
